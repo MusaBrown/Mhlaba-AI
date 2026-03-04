@@ -1,37 +1,69 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { 
   Plus, MessageSquare, Settings, Trash2, 
   Send, Copy, Check, MoreHorizontal, X,
-  Menu, Moon, Sun, FileText, Sparkles
+  Menu, Sparkles, Cpu, Download, AlertCircle
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { v4 as uuidv4 } from 'uuid'
+import * as webllm from "@mlc-ai/web-llm"
 
 // Storage keys
 const STORAGE_KEYS = {
   CONVERSATIONS: 'mhlaba_conversations',
   CURRENT_CONVERSATION: 'mhlaba_current_conversation',
-  SETTINGS: 'mhlaba_settings'
+  SELECTED_MODEL: 'mhlaba_selected_model'
 }
 
-// Default settings
-const DEFAULT_SETTINGS = {
-  provider: 'openai',
-  openaiKey: '',
-  openaiModel: 'gpt-3.5-turbo',
-  anthropicKey: '',
-  anthropicModel: 'claude-instant-1'
-}
+// Available models - all run in browser, no API key needed!
+const AVAILABLE_MODELS = [
+  {
+    id: "Llama-3.1-8B-Instruct-q4f32_1-MLC",
+    name: "Llama 3.1 8B",
+    description: "Fast & capable - Good for most tasks",
+    size: "4.5 GB",
+    quant: "q4f32"
+  },
+  {
+    id: "Phi-3-mini-4k-instruct-q4f32_1-MLC",
+    name: "Phi-3 Mini",
+    description: "Small & fast - Great for quick responses",
+    size: "1.8 GB",
+    quant: "q4f32"
+  },
+  {
+    id: "Qwen2.5-7B-Instruct-q4f32_1-MLC",
+    name: "Qwen 2.5 7B",
+    description: "Excellent multilingual support",
+    size: "4.3 GB",
+    quant: "q4f32"
+  },
+  {
+    id: "Mistral-7B-Instruct-v0.3-q4f32_1-MLC",
+    name: "Mistral 7B",
+    description: "High quality responses",
+    size: "4.5 GB",
+    quant: "q4f32"
+  },
+  {
+    id: "gemma-2-2b-it-q4f32_1-MLC",
+    name: "Gemma 2 2B",
+    description: "Tiny but mighty - Fastest option",
+    size: "1.6 GB",
+    quant: "q4f32"
+  }
+]
 
 // Suggestion chips
 const SUGGESTIONS = [
   "Explain quantum computing in simple terms",
   "Help me write a Python function to sort a list",
   "What are the best practices for React hooks?",
-  "Create a workout plan for beginners"
+  "Create a workout plan for beginners",
+  "Write a short poem about technology"
 ]
 
 // Code block component
@@ -65,7 +97,7 @@ function CodeBlock({ language, value }) {
 }
 
 // Message component
-function Message({ message, onCopy }) {
+function Message({ message }) {
   const [copied, setCopied] = useState(false)
   const isUser = message.role === 'user'
   
@@ -121,104 +153,90 @@ function Message({ message, onCopy }) {
   )
 }
 
-// Settings Modal
-function SettingsModal({ isOpen, onClose, settings, onSave }) {
-  const [localSettings, setLocalSettings] = useState(settings)
-  
+// Model Selector Modal
+function ModelSelector({ isOpen, onClose, selectedModel, onSelectModel, onLoadModel, loading, progress }) {
   if (!isOpen) return null
   
-  const handleSave = () => {
-    onSave(localSettings)
-    onClose()
-  }
+  const selectedModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModel)
   
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Settings</h2>
+          <h2 className="modal-title">
+            <Cpu size={20} style={{ marginRight: 8, verticalAlign: 'middle' }}/>
+            Select AI Model
+          </h2>
           <button className="modal-close" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
         
         <div className="modal-body">
-          <div className="provider-tabs">
-            <button 
-              className={`provider-tab ${localSettings.provider === 'openai' ? 'active' : ''}`}
-              onClick={() => setLocalSettings({ ...localSettings, provider: 'openai' })}
-            >
-              OpenAI
-            </button>
-            <button 
-              className={`provider-tab ${localSettings.provider === 'anthropic' ? 'active' : ''}`}
-              onClick={() => setLocalSettings({ ...localSettings, provider: 'anthropic' })}
-            >
-              Anthropic
-            </button>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: 14 }}>
+            Models run entirely in your browser using WebGPU. No API keys needed!
+          </p>
+          
+          {loading && (
+            <div className="progress-container" style={{ marginBottom: 20 }}>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${progress.percent}%` }}
+                />
+              </div>
+              <div className="progress-text">
+                <span>{progress.text}</span>
+                <span>{progress.percent}%</span>
+              </div>
+            </div>
+          )}
+          
+          <div className="model-list">
+            {AVAILABLE_MODELS.map(model => (
+              <div 
+                key={model.id}
+                className={`model-item ${selectedModel === model.id ? 'selected' : ''}`}
+                onClick={() => onSelectModel(model.id)}
+              >
+                <div className="model-radio">
+                  <div className={`radio-circle ${selectedModel === model.id ? 'checked' : ''}`} />
+                </div>
+                <div className="model-info">
+                  <div className="model-name">{model.name}</div>
+                  <div className="model-description">{model.description}</div>
+                  <div className="model-meta">
+                    <span className="model-size">
+                      <Download size={12} />
+                      {model.size}
+                    </span>
+                    <span className="model-quant">{model.quant}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           
-          {localSettings.provider === 'openai' ? (
-            <>
-              <div className="form-group">
-                <label className="form-label">OpenAI API Key</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  value={localSettings.openaiKey}
-                  onChange={e => setLocalSettings({ ...localSettings, openaiKey: e.target.value })}
-                  placeholder="sk-..."
-                />
-                <p className="form-hint">Your API key is stored locally in your browser.</p>
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Model</label>
-                <select 
-                  className="form-select"
-                  value={localSettings.openaiModel}
-                  onChange={e => setLocalSettings({ ...localSettings, openaiModel: e.target.value })}
-                >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4">GPT-4</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                </select>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="form-group">
-                <label className="form-label">Anthropic API Key</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  value={localSettings.anthropicKey}
-                  onChange={e => setLocalSettings({ ...localSettings, anthropicKey: e.target.value })}
-                  placeholder="sk-ant-..."
-                />
-                <p className="form-hint">Your API key is stored locally in your browser.</p>
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Model</label>
-                <select 
-                  className="form-select"
-                  value={localSettings.anthropicModel}
-                  onChange={e => setLocalSettings({ ...localSettings, anthropicModel: e.target.value })}
-                >
-                  <option value="claude-instant-1">Claude Instant</option>
-                  <option value="claude-2">Claude 2</option>
-                  <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                  <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                </select>
-              </div>
-            </>
-          )}
+          <div className="webgpu-warning" style={{ marginTop: 20 }}>
+            <AlertCircle size={16} />
+            <span>
+              Requires Chrome/Edge with WebGPU enabled. 
+              <a href="chrome://flags/#enable-unsafe-webgpu" target="_blank" rel="noopener">
+                Enable here
+              </a>
+            </span>
+          </div>
         </div>
         
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>Save Settings</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={onLoadModel}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Load Model'}
+          </button>
         </div>
       </div>
     </div>
@@ -230,18 +248,25 @@ function App() {
   const [conversations, setConversations] = useState([])
   const [currentConversationId, setCurrentConversationId] = useState(null)
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id)
+  const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false)
+  const [loadingModel, setLoadingModel] = useState(false)
+  const [loadProgress, setLoadProgress] = useState({ text: '', percent: 0 })
+  const [engine, setEngine] = useState(null)
+  const [modelLoaded, setModelLoaded] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [error, setError] = useState(null)
+  
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const abortControllerRef = useRef(null)
   
   // Load data from localStorage on mount
   useEffect(() => {
     const savedConversations = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS)
     const savedCurrent = localStorage.getItem(STORAGE_KEYS.CURRENT_CONVERSATION)
-    const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS)
+    const savedModel = localStorage.getItem(STORAGE_KEYS.SELECTED_MODEL)
     
     if (savedConversations) {
       setConversations(JSON.parse(savedConversations))
@@ -249,34 +274,63 @@ function App() {
     if (savedCurrent) {
       setCurrentConversationId(savedCurrent)
     }
-    if (savedSettings) {
-      setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) })
+    if (savedModel) {
+      setSelectedModel(savedModel)
     }
   }, [])
   
-  // Save conversations to localStorage
+  // Save to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversations))
   }, [conversations])
   
-  // Save current conversation to localStorage
   useEffect(() => {
     if (currentConversationId) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_CONVERSATION, currentConversationId)
     }
   }, [currentConversationId])
   
-  // Save settings to localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings))
-  }, [settings])
+    localStorage.setItem(STORAGE_KEYS.SELECTED_MODEL, selectedModel)
+  }, [selectedModel])
   
   // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [conversations, currentConversationId])
+  }, [conversations, currentConversationId, isGenerating])
+  
+  // Initialize WebLLM engine
+  const loadModel = useCallback(async () => {
+    setLoadingModel(true)
+    setLoadProgress({ text: 'Initializing...', percent: 0 })
+    setError(null)
+    
+    try {
+      const initProgressCallback = (report) => {
+        setLoadProgress({
+          text: report.text,
+          percent: Math.round(report.progress * 100)
+        })
+      }
+      
+      const newEngine = await webllm.CreateMLCEngine(
+        selectedModel,
+        { initProgressCallback }
+      )
+      
+      setEngine(newEngine)
+      setModelLoaded(true)
+      setIsModelSelectorOpen(false)
+    } catch (err) {
+      console.error('Failed to load model:', err)
+      setError(err.message || 'Failed to load model. Make sure WebGPU is enabled.')
+    } finally {
+      setLoadingModel(false)
+    }
+  }, [selectedModel])
   
   const currentConversation = conversations.find(c => c.id === currentConversationId)
+  const selectedModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModel)
   
   const createNewConversation = () => {
     const newConversation = {
@@ -297,86 +351,11 @@ function App() {
     }
   }
   
-  const generateTitle = async (messages) => {
-    if (messages.length < 2) return
-    
-    const firstUserMessage = messages.find(m => m.role === 'user')
-    if (!firstUserMessage) return
-    
-    const title = firstUserMessage.content.slice(0, 40) + 
-      (firstUserMessage.content.length > 40 ? '...' : '')
-    
-    setConversations(prev => prev.map(c => 
-      c.id === currentConversationId 
-        ? { ...c, title }
-        : c
-    ))
-  }
-  
-  const callOpenAI = async (messages) => {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${settings.openaiKey}`
-      },
-      body: JSON.stringify({
-        model: settings.openaiModel,
-        messages: [
-          { role: 'system', content: 'You are MHLABA, a helpful AI assistant. Be concise and helpful.' },
-          ...messages.map(m => ({ role: m.role, content: m.content }))
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      })
-    })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error?.message || 'Failed to get response from OpenAI')
-    }
-    
-    const data = await response.json()
-    return data.choices[0].message.content
-  }
-  
-  const callAnthropic = async (messages) => {
-    const conversation = messages.map(m => 
-      m.role === 'user' ? `Human: ${m.content}` : `Assistant: ${m.content}`
-    ).join('\n\n')
-    
-    const response = await fetch('https://api.anthropic.com/v1/complete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': settings.anthropicKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: settings.anthropicModel,
-        prompt: `${conversation}\n\nAssistant:`,
-        max_tokens_to_sample: 2000,
-        temperature: 0.7
-      })
-    })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error?.message || 'Failed to get response from Anthropic')
-    }
-    
-    const data = await response.json()
-    return data.completion
-  }
-  
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isGenerating) return
     
-    // Check if API key is set
-    const apiKey = settings.provider === 'openai' ? settings.openaiKey : settings.anthropicKey
-    if (!apiKey) {
-      alert(`Please set your ${settings.provider === 'openai' ? 'OpenAI' : 'Anthropic'} API key in settings.`)
-      setIsSettingsOpen(true)
+    if (!modelLoaded) {
+      setIsModelSelectorOpen(true)
       return
     }
     
@@ -401,55 +380,110 @@ function App() {
     ))
     
     setInput('')
-    setIsLoading(true)
+    setIsGenerating(true)
     
     try {
-      let responseContent
-      
-      if (settings.provider === 'openai') {
-        responseContent = await callOpenAI(updatedMessages)
-      } else {
-        responseContent = await callAnthropic(updatedMessages)
-      }
-      
-      const assistantMessage = {
-        id: uuidv4(),
-        role: 'assistant',
-        content: responseContent,
-        timestamp: Date.now()
-      }
-      
-      const finalMessages = [...updatedMessages, assistantMessage]
-      
-      setConversations(prev => prev.map(c => 
-        c.id === currentConversationId 
-          ? { ...c, messages: finalMessages }
-          : c
-      ))
-      
-      // Generate title after first exchange
+      // Generate title on first message
       if (updatedMessages.length === 1) {
-        generateTitle(finalMessages)
+        const title = userMessage.content.slice(0, 40) + 
+          (userMessage.content.length > 40 ? '...' : '')
+        setConversations(prev => prev.map(c => 
+          c.id === currentConversationId 
+            ? { ...c, title }
+            : c
+        ))
       }
       
-    } catch (error) {
-      console.error('Error:', error)
+      // Prepare messages for the model
+      const messages = [
+        { role: "system", content: "You are MHLABA, a helpful AI assistant. Be concise, helpful, and friendly." },
+        ...updatedMessages.map(m => ({ role: m.role, content: m.content }))
+      ]
+      
+      // Stream the response
+      const completion = await engine.chat.completions.create({
+        messages,
+        temperature: 0.7,
+        max_tokens: 2048,
+        stream: true,
+      })
+      
+      let assistantContent = ""
+      
+      for await (const chunk of completion) {
+        const content = chunk.choices[0]?.delta?.content || ""
+        assistantContent += content
+        
+        // Update the conversation with the partial response
+        setConversations(prev => {
+          const conv = prev.find(c => c.id === currentConversationId)
+          if (!conv) return prev
+          
+          const existingMessages = conv.messages.filter(m => m.id !== 'streaming')
+          
+          return prev.map(c => 
+            c.id === currentConversationId 
+              ? { 
+                  ...c, 
+                  messages: [
+                    ...existingMessages,
+                    {
+                      id: 'streaming',
+                      role: 'assistant',
+                      content: assistantContent,
+                      timestamp: Date.now()
+                    }
+                  ]
+                }
+              : c
+          )
+        })
+      }
+      
+      // Finalize with a proper ID
+      setConversations(prev => {
+        const conv = prev.find(c => c.id === currentConversationId)
+        if (!conv) return prev
+        
+        const existingMessages = conv.messages.filter(m => m.id !== 'streaming')
+        
+        return prev.map(c => 
+          c.id === currentConversationId 
+            ? { 
+                ...c, 
+                messages: [
+                  ...existingMessages,
+                  {
+                    id: uuidv4(),
+                    role: 'assistant',
+                    content: assistantContent,
+                    timestamp: Date.now()
+                  }
+                ]
+              }
+            : c
+        )
+      })
+      
+    } catch (err) {
+      console.error('Generation error:', err)
+      setError(err.message || 'Failed to generate response')
       
       const errorMessage = {
         id: uuidv4(),
         role: 'assistant',
-        content: `Error: ${error.message}. Please check your API key and try again.`,
+        content: `Error: ${err.message || 'Something went wrong. Please try again.'}`,
         timestamp: Date.now(),
         isError: true
       }
       
       setConversations(prev => prev.map(c => 
         c.id === currentConversationId 
-          ? { ...c, messages: [...updatedMessages, errorMessage] }
+          ? { ...c, messages: [...(c.messages.filter(m => m.id !== 'streaming')), errorMessage] }
           : c
       ))
     } finally {
-      setIsLoading(false)
+      setIsGenerating(false)
     }
   }
   
@@ -497,8 +531,12 @@ function App() {
         </div>
         
         <div className="sidebar-footer">
-          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}>
-            <Settings size={18} />
+          <button 
+            className="icon-btn" 
+            onClick={() => setIsModelSelectorOpen(true)}
+            title="Change Model"
+          >
+            <Cpu size={18} />
           </button>
         </div>
       </aside>
@@ -519,33 +557,26 @@ function App() {
           </div>
           
           <div className="header-actions">
-            <select 
+            <button 
               className="model-selector"
-              value={settings.provider === 'openai' ? settings.openaiModel : settings.anthropicModel}
-              onChange={(e) => {
-                if (settings.provider === 'openai') {
-                  setSettings({ ...settings, openaiModel: e.target.value })
-                } else {
-                  setSettings({ ...settings, anthropicModel: e.target.value })
-                }
-              }}
+              onClick={() => setIsModelSelectorOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              {settings.provider === 'openai' ? (
-                <>
-                  <option value="gpt-3.5-turbo">GPT-3.5</option>
-                  <option value="gpt-4">GPT-4</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                </>
-              ) : (
-                <>
-                  <option value="claude-instant-1">Claude Instant</option>
-                  <option value="claude-2">Claude 2</option>
-                  <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                </>
-              )}
-            </select>
+              <Cpu size={14} />
+              {selectedModelInfo?.name || 'Select Model'}
+              {modelLoaded && <span style={{ color: 'var(--success)' }}>●</span>}
+            </button>
           </div>
         </header>
+        
+        {/* Error Banner */}
+        {error && (
+          <div className="error-banner">
+            <AlertCircle size={16} />
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
         
         {/* Chat */}
         <div className="chat-container">
@@ -554,15 +585,26 @@ function App() {
               <div className="welcome-logo">M</div>
               <h1 className="welcome-title">How can I help you today?</h1>
               <p className="welcome-subtitle">
-                I'm MHLABA, your personal AI assistant. I can help you with writing, 
-                coding, analysis, and much more.
+                I'm MHLABA, your personal AI assistant. I run entirely in your browser 
+                using WebLLM - no API keys needed!
               </p>
+              
+              {!modelLoaded && (
+                <button 
+                  className="load-model-btn"
+                  onClick={() => setIsModelSelectorOpen(true)}
+                >
+                  <Download size={18} />
+                  Load AI Model to Start
+                </button>
+              )}
               
               <div className="suggestion-chips">
                 {SUGGESTIONS.map((suggestion, idx) => (
                   <button 
                     key={idx} 
                     className="suggestion-chip"
+                    disabled={!modelLoaded}
                     onClick={() => {
                       setInput(suggestion)
                       inputRef.current?.focus()
@@ -579,19 +621,6 @@ function App() {
                 <Message key={message.id} message={message} />
               ))}
               
-              {isLoading && (
-                <div className="message assistant">
-                  <div className="message-avatar assistant">M</div>
-                  <div className="message-content">
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -607,15 +636,16 @@ function App() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Message MHLABA..."
+                placeholder={modelLoaded ? "Message MHLABA..." : "Load a model first to start chatting..."}
                 rows={1}
                 style={{ minHeight: '24px' }}
+                disabled={!modelLoaded && !isGenerating}
               />
             </div>
             <button 
               className="send-btn"
               onClick={handleSend}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isGenerating || !modelLoaded}
             >
               <Send size={18} />
             </button>
@@ -623,25 +653,30 @@ function App() {
           
           <div className="input-footer">
             <div className="input-tools">
-              <button className="tool-btn" onClick={() => setIsSettingsOpen(true)}>
-                <Settings size={14} />
-                Settings
+              <button className="tool-btn" onClick={() => setIsModelSelectorOpen(true)}>
+                <Cpu size={14} />
+                {modelLoaded ? selectedModelInfo?.name : 'Load Model'}
               </button>
             </div>
             <span>
-              {settings.provider === 'openai' ? 'OpenAI' : 'Anthropic'} · 
-              Press Enter to send, Shift+Enter for new line
+              {modelLoaded 
+                ? 'Running locally in your browser with WebLLM'
+                : 'No API keys needed - models run locally'
+              }
             </span>
           </div>
         </div>
       </main>
       
-      {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onSave={setSettings}
+      {/* Model Selector Modal */}
+      <ModelSelector
+        isOpen={isModelSelectorOpen}
+        onClose={() => setIsModelSelectorOpen(false)}
+        selectedModel={selectedModel}
+        onSelectModel={setSelectedModel}
+        onLoadModel={loadModel}
+        loading={loadingModel}
+        progress={loadProgress}
       />
     </div>
   )
