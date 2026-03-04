@@ -1,0 +1,8 @@
+hello
+what can you do
+time
+list files
+who are you
+tell me a joke
+system info
+exit
