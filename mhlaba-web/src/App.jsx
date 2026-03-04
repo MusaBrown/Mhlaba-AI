@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { 
-  Plus, MessageSquare, Settings, Trash2, 
-  Send, Copy, Check, X, Menu, Sparkles, 
+  Plus, MessageSquare, Trash2, 
+  Send, Copy, Check, Menu,
   AlertCircle, Loader2
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -9,7 +9,7 @@ import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { v4 as uuidv4 } from 'uuid'
-import { API_URL, DEFAULT_MODEL } from './config'
+import { API_URL } from './config'
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -23,7 +23,7 @@ const SUGGESTIONS = [
   "Help me write a Python function to sort a list",
   "What are the best practices for React hooks?",
   "Create a workout plan for beginners",
-  "Write a short poem about technology"
+  "Write a poem about AI"
 ]
 
 // Code block component
@@ -119,14 +119,15 @@ function App() {
   const [currentConversationId, setCurrentConversationId] = useState(null)
   const [input, setInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [apiStatus, setApiStatus] = useState('checking') // 'checking', 'connected', 'error'
+  const [apiStatus, setApiStatus] = useState('checking')
+  const [apiInfo, setApiInfo] = useState({ provider: 'unknown', model: 'unknown' })
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [error, setError] = useState(null)
   
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   
-  // Load data from localStorage on mount
+  // Load data from localStorage
   useEffect(() => {
     const savedConversations = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS)
     const savedCurrent = localStorage.getItem(STORAGE_KEYS.CURRENT_CONVERSATION)
@@ -139,9 +140,12 @@ function App() {
     }
   }, [])
   
-  // Check API health on mount
+  // Check API health
   useEffect(() => {
     checkApiHealth()
+    // Check every 30 seconds
+    const interval = setInterval(checkApiHealth, 30000)
+    return () => clearInterval(interval)
   }, [])
   
   // Save to localStorage
@@ -155,7 +159,7 @@ function App() {
     }
   }, [currentConversationId])
   
-  // Scroll to bottom on new messages
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversations, currentConversationId, isGenerating])
@@ -164,16 +168,21 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/health`)
       if (response.ok) {
+        const data = await response.json()
         setApiStatus('connected')
+        setApiInfo({ 
+          provider: data.provider || 'unknown', 
+          model: data.model || 'unknown' 
+        })
         setError(null)
       } else {
         setApiStatus('error')
-        setError('API server is not responding. Please check if the backend is running.')
+        setError('API server is not responding')
       }
     } catch (err) {
       console.error('API health check failed:', err)
       setApiStatus('error')
-      setError('Cannot connect to API server. Please check your backend deployment.')
+      setError('Cannot connect to API server')
     }
   }
   
@@ -208,7 +217,6 @@ function App() {
       timestamp: Date.now()
     }
     
-    // Create new conversation if none exists
     if (!currentConversation) {
       createNewConversation()
     }
@@ -237,21 +245,16 @@ function App() {
         ))
       }
       
-      // Prepare messages for API
+      // Call API (key is on backend!)
       const messages = [
         { role: "system", content: "You are MHLABA, a helpful AI assistant. Be concise, helpful, and friendly." },
         ...updatedMessages.map(m => ({ role: m.role, content: m.content }))
       ]
       
-      // Call API
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: DEFAULT_MODEL,
-          messages,
-          stream: false
-        })
+        body: JSON.stringify({ messages, stream: false })
       })
       
       if (!response.ok) {
@@ -355,7 +358,7 @@ function App() {
               background: apiStatus === 'connected' ? 'var(--success)' : 'var(--error)',
               display: 'inline-block'
             }} />
-            {apiStatus === 'connected' ? 'API Connected' : 'API Disconnected'}
+            {apiStatus === 'connected' ? 'Connected' : 'Disconnected'}
           </div>
         </div>
       </aside>
@@ -371,15 +374,15 @@ function App() {
               </button>
             )}
             <span className="header-title">
-              {currentConversation?.title || 'MHLABA AI Assistant'}
+              {currentConversation?.title || 'MHLABA AI'}
             </span>
           </div>
           
-          <div className="header-actions">
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Model: {DEFAULT_MODEL}
-            </span>
-          </div>
+          {apiStatus === 'connected' && (
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              Powered by {apiInfo.provider} · {apiInfo.model}
+            </div>
+          )}
         </header>
         
         {/* Error Banner */}
@@ -388,7 +391,7 @@ function App() {
             <AlertCircle size={16} />
             <span>{error || 'Cannot connect to API server'}</span>
             <button onClick={() => { setError(null); checkApiHealth(); }}>
-              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={14} className="spin" />
             </button>
           </div>
         )}
@@ -400,14 +403,13 @@ function App() {
               <div className="welcome-logo">M</div>
               <h1 className="welcome-title">How can I help you today?</h1>
               <p className="welcome-subtitle">
-                I'm MHLABA, your personal AI assistant powered by Ollama.
-                {apiStatus !== 'connected' && ' Please wait while we connect to the API...'}
+                I'm MHLABA, your AI assistant. No API key needed - just start chatting!
               </p>
               
               {apiStatus === 'checking' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)' }}>
-                  <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-                  Connecting to API...
+                  <Loader2 size={20} className="spin" />
+                  Connecting...
                 </div>
               )}
               
@@ -465,12 +467,12 @@ function App() {
                   apiStatus === 'connected' 
                     ? "Message MHLABA..." 
                     : apiStatus === 'checking'
-                    ? "Connecting to API..."
-                    : "API unavailable. Check backend..."
+                    ? "Connecting..."
+                    : "API unavailable..."
                 }
                 rows={1}
                 style={{ minHeight: '24px' }}
-                disabled={apiStatus !== 'connected' && apiStatus !== 'checking'}
+                disabled={apiStatus !== 'connected'}
               />
             </div>
             <button 
@@ -485,10 +487,10 @@ function App() {
           <div className="input-footer">
             <span>
               {apiStatus === 'connected' 
-                ? `Connected to Ollama · Model: ${DEFAULT_MODEL}`
+                ? `Powered by ${apiInfo.provider} · No API key needed`
                 : apiStatus === 'checking'
-                ? 'Checking API connection...'
-                : 'API disconnected. Check backend.'
+                ? 'Checking connection...'
+                : 'API disconnected'
               }
             </span>
           </div>
