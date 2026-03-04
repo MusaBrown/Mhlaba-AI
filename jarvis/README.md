@@ -1,15 +1,15 @@
-# 🤖 MHLABA - My Helpful Learning Assistant & Brilliant Aid
+# 🤖 JARVIS - Just A Rather Very Intelligent System
 
-A voice-activated AI assistant for Windows inspired by advanced AI systems. Can open documents, answer questions, execute system commands, and hold conversations.
+A voice-activated AI assistant for Windows inspired by Iron Man's JARVIS. Can open documents, answer questions, execute system commands, and hold conversations.
 
 ## Features
 
 - 🎤 **Voice Recognition**: Listen and respond to voice commands
-- 🔊 **Text-to-Speech**: MHLABA speaks back to you
+- 🔊 **Text-to-Speech**: JARVIS speaks back to you
 - 🧠 **AI Brain**: Conversational AI with context awareness
 - 📄 **Document Reader**: Read various file formats (txt, pdf, docx, etc.)
-- 💭 **Document Discussion**: Read along with MHLABA and discuss documents together
-- 🖥️ **Screen Reader**: MHLABA can see your screen and describe what's on it
+- 💭 **Document Discussion**: Read along with JARVIS and discuss documents together
+- 🖥️ **Screen Reader**: JARVIS can see your screen and describe what's on it
 - ⚡ **System Commands**: Open apps, get system info, search the web
 - 💬 **Natural Conversation**: Chat naturally about various topics
 
@@ -36,19 +36,19 @@ pipwin install pyaudio
 
 ## Usage
 
-### Run MHLABA
+### Run JARVIS
 ```bash
-cd mhlaba
+cd jarvis
 python main.py
 ```
 
 ### Commands
 
 #### Voice Commands
-Say "Mhlaba" followed by your command:
-- "Mhlaba, what time is it?"
-- "Mhlaba, open Chrome"
-- "Mhlaba, read my document.txt"
+Say "Jarvis" followed by your command:
+- "Jarvis, what time is it?"
+- "Jarvis, open Chrome"
+- "Jarvis, read my document.txt"
 
 #### Text Commands
 Type directly in the terminal:
@@ -62,7 +62,7 @@ Type directly in the terminal:
 - `exit` - Quit JARVIS
 
 #### Document Discussion Commands
-After reading a document, MHLABA enters discussion mode:
+After reading a document, JARVIS enters discussion mode:
 - Ask questions about the document: *"What does it say about the main topic?"*
 - Get clarifications: *"Explain this section"*
 - Find specific info: *"What are the key points?"*
@@ -76,7 +76,7 @@ After reading a document, MHLABA enters discussion mode:
 ## Project Structure
 
 ```
-mhlaba/
+jarvis/
 ├── main.py              # Main entry point
 ├── config.py            # Configuration settings
 ├── voice_listener.py    # Speech recognition
@@ -92,7 +92,7 @@ mhlaba/
 ## Customization
 
 Edit `config.py` to customize:
-- Wake word (default: "mhlaba")
+- Wake word (default: "jarvis")
 - Voice settings
 - AI provider
 - Personality traits
@@ -128,4 +128,4 @@ This project is designed specifically for Windows and uses Windows-specific feat
 
 ## License
 
-Personal use only. Have fun with your own MHLABA!
+Personal use only. Have fun with your own JARVIS!

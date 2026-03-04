@@ -127,9 +127,9 @@ class AIBrain:
         greetings = ["hello", "hi", "hey", "greetings"]
         if any(g in user_input for g in greetings):
             responses = [
-                "Hello! How may I assist you today?",
+                "Hello, sir. How may I assist you today?",
                 "Greetings. I'm at your service.",
-                "Hello. MHLABA online and ready.",
+                "Hello. JARVIS online and ready.",
                 "Good day. What can I do for you?"
             ]
             return random.choice(responses)
@@ -146,7 +146,7 @@ class AIBrain:
             
         # Identity
         if any(x in user_input for x in ["who are you", "your name", "what are you"]):
-            return "I am MHLABA - My Helpful Learning Assistant & Brilliant Aid. I'm your personal AI assistant, designed to help with tasks, answer questions, and manage your digital environment."
+            return "I am JARVIS - Just A Rather Very Intelligent System. I'm your personal AI assistant, designed to help with tasks, answer questions, and manage your digital environment."
             
         # Capabilities
         if any(x in user_input for x in ["what can you do", "your capabilities", "help me with"]):
@@ -220,7 +220,7 @@ class AIBrain:
         
     def _get_system_prompt(self) -> str:
         """Get the system prompt for AI models"""
-        return f"""You are {self.config.assistant_name}, an advanced AI assistant ready to help with any task. 
+        return f"""You are {self.config.assistant_name}, an advanced AI assistant inspired by JARVIS from Iron Man. 
 You are {self.config.personality}.
 You are running on a Windows computer and helping the user with tasks.
 Keep responses concise and helpful. Use a professional but warm tone.

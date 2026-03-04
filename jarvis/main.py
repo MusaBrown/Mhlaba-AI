@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MHLABA - My Helpful Learning Assistant & Brilliant Aid
+JARVIS - Just A Rather Very Intelligent System
 A voice-activated AI assistant for Windows
 """
 
@@ -20,11 +20,11 @@ from screen_reader import ScreenReader
 from config import Config
 
 
-class Mhlaba:
-    """Main MHLABA Assistant Class"""
+class Jarvis:
+    """Main JARVIS Assistant Class"""
     
     def __init__(self):
-        print("[MHLABA] Initializing MHLABA...")
+        print("[JARVIS] Initializing JARVIS...")
         self.config = Config()
         self.speaker = VoiceSpeaker()
         self.brain = AIBrain()
@@ -33,7 +33,7 @@ class Mhlaba:
         self.screen_reader = ScreenReader()
         self.listener = VoiceListener(self.config)
         self.running = False
-        self.wake_word = "mhlaba"
+        self.wake_word = "jarvis"
         
         # Set up signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -41,12 +41,12 @@ class Mhlaba:
         
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
-        print("\n[MHLABA] Shutting down MHLABA...")
+        print("\n[JARVIS] Shutting down JARVIS...")
         self.running = False
         
     async def startup(self):
         """Initialize all components"""
-        await self.speaker.speak("MHLABA online. Systems operational. How may I assist you today?")
+        await self.speaker.speak("JARVIS online. Systems operational. How may I assist you today?")
         
     async def process_command(self, command: str):
         """Process a voice command"""
@@ -68,13 +68,13 @@ class Mhlaba:
         # Check for document discussion mode
         if self.brain.document_discussion_mode:
             response = await self.brain.discuss_document(command)
-            print(f"[MHLABA] {response}")
+            print(f"[JARVIS] {response}")
             await self.speaker.speak(response)
             return
             
         # Default: Use AI brain for conversation
         response = await self.brain.generate_response(command)
-        print(f"[MHLABA] {response}")
+        print(f"[JARVIS] {response}")
         await self.speaker.speak(response)
         
     async def _handle_system_commands(self, command: str) -> bool:
@@ -218,13 +218,13 @@ class Mhlaba:
         self.running = True
         
         print("\n" + "="*50)
-        print("MHLABA IS READY")
+        print("JARVIS IS READY")
         print("="*50)
         print(f"VOICE MODE: Say '{self.wake_word.upper()}' followed by your command")
         print("TEXT MODE: Type your command below and press Enter")
         print("Type 'exit' to quit")
         print("="*50)
-        print("\n[INFO] Listening in background... Say 'Mhlaba hello' or type below:\n")
+        print("\n[INFO] Listening in background... Say 'Jarvis hello' or type below:\n")
         
         # Start listening in background
         listen_task = asyncio.create_task(self._listen_loop())
@@ -237,7 +237,7 @@ class Mhlaba:
                 )
                 
                 if user_input.lower() in ['exit', 'quit', 'goodbye', 'bye']:
-                    await self.speaker.speak("Goodbye. MHLABA standing by.")
+                    await self.speaker.speak("Goodbye, sir. JARVIS standing by.")
                     self.running = False
                     break
                     
@@ -264,7 +264,7 @@ class Mhlaba:
                             await self.process_command(clean_command)
                     else:
                         print(f"[VOICE] Wake word '{self.wake_word}' not detected. Ignored.")
-                        print(f"[VOICE] Try saying: 'Mhlaba what time is it'")
+                        print(f"[VOICE] Try saying: 'Jarvis what time is it'")
             except Exception as e:
                 print(f"[VOICE ERROR] {e}")
             await asyncio.sleep(0.5)
@@ -272,8 +272,8 @@ class Mhlaba:
 
 async def main():
     """Entry point"""
-    mhlaba = Mhlaba()
-    await mhlaba.run()
+    jarvis = Jarvis()
+    await jarvis.run()
 
 
 if __name__ == "__main__":

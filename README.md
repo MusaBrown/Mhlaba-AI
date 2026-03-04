@@ -1,135 +1,72 @@
-# 🤖 MHLABA - My Helpful Learning Assistant & Brilliant Aid
+# 🤖 JARVIS - Just A Rather Very Intelligent System
 
-Your personal AI assistant with **Ollama backend** and modern web interface.
+A voice-activated AI assistant for Windows inspired by Iron Man's JARVIS.
 
-## 🏗️ Architecture
+## Features
 
-```
-┌─────────────────┐      HTTP API      ┌─────────────────┐
-│  mhlaba-web     │  ◄──────────────►  │  mhlaba-api     │
-│  (Frontend)     │                    │  (Backend)      │
-│  Netlify        │                    │  Render/VPS     │
-│  React          │                    │  Ollama         │
-└─────────────────┘                    └─────────────────┘
-```
+- 🎤 **Voice Recognition** - Listen and respond to voice commands
+- 🔊 **Text-to-Speech** - JARVIS speaks back to you
+- 🧠 **AI Brain** - Conversational AI with OpenAI/Anthropic support
+- 📄 **Document Reader** - Read various file formats (txt, pdf, docx, etc.)
+- 💭 **Document Discussion** - Read along with JARVIS and discuss documents together
+- 🖥️ **Screen Reader** - JARVIS can see your screen and describe what's on it
+- ⚡ **System Commands** - Open apps, get system info, search the web
+- 💬 **Natural Conversation** - Chat naturally about various topics
 
-**No API keys needed!** You host your own Ollama backend.
+## Quick Start
 
-## 📁 Project Structure
+1. **Install Python 3.8+** from [python.org](https://python.org)
 
-```
-.
-├── mhlaba/              # Desktop Python application
-│   ├── main.py
-│   ├── config.py
-│   └── requirements.txt
-│
-├── mhlaba-api/          # Backend API (NEW!)
-│   ├── src/index.js     # Express API server
-│   ├── Dockerfile       # Docker config
-│   ├── docker-compose.yml
-│   └── README.md
-│
-├── mhlaba-web/          # Frontend React app
-│   ├── src/App.jsx      # Chat interface
-│   ├── src/config.js    # API URL config
-│   └── README.md
-│
-├── DEPLOY_OLLAMA.md     # Full deployment guide
-└── README.md            # This file
-```
-
-## 🚀 Quick Deploy
-
-### Step 1: Deploy Backend (Ollama API)
-
-**Option A: Docker VPS (Recommended)**
-
+2. **Install dependencies**:
 ```bash
-# On your VPS
-git clone https://github.com/MusaBrown/Mhlaba-AI.git
-cd Mhlaba-AI/mhlaba-api
-docker-compose up -d
-
-# Pull a model
-docker exec mhlaba-ollama ollama pull llama3.2
-```
-
-**Option B: Render.com**
-- See `DEPLOY_OLLAMA.md` for details
-
-### Step 2: Update Frontend Config
-
-Edit `mhlaba-web/src/config.js`:
-
-```javascript
-export const API_URL = 'https://your-api-url.com';
-```
-
-### Step 3: Deploy Frontend
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/MusaBrown/Mhlaba-AI)
-
-Or manually:
-```bash
-cd mhlaba-web
-npm install
-npm run build
-# Upload dist/ to Netlify
-```
-
----
-
-## 💻 Desktop Application
-
-Voice-activated AI assistant for Windows:
-
-```bash
-cd mhlaba
+cd jarvis
 pip install -r requirements.txt
+```
+
+3. **Run JARVIS**:
+```bash
 python main.py
 ```
 
----
+## Optional: Add AI API Keys
 
-## 📚 Documentation
+For smarter responses, add API keys in `jarvis/config.py`:
+- OpenAI: https://platform.openai.com/api-keys
+- Anthropic: https://console.anthropic.com/settings/keys
 
-- **[DEPLOY_OLLAMA.md](DEPLOY_OLLAMA.md)** - Complete deployment guide
-- **[mhlaba-api/README.md](mhlaba-api/README.md)** - Backend API docs
-- **[mhlaba-web/README.md](mhlaba-web/README.md)** - Frontend docs
+Without API keys, JARVIS uses a built-in rule-based AI.
 
----
+## Voice Commands
 
-## 🛠️ Tech Stack
+Say "Jarvis" followed by your command:
+- "Jarvis, what time is it?"
+- "Jarvis, open Chrome"
+- "Jarvis, read my document.txt"
 
-| Component | Technology |
-|-----------|-----------|
-| **Frontend** | React + Vite |
-| **Backend** | Node.js + Express |
-| **AI Engine** | Ollama |
-| **Models** | Llama 3.2, Llama 3.1, Mistral, etc. |
-| **Hosting** | Netlify (frontend) + Render/VPS (backend) |
+## Project Structure
 
----
+```
+jarvis/
+├── main.py              # Main entry point
+├── config.py            # Configuration settings
+├── voice_listener.py    # Speech recognition
+├── voice_speaker.py     # Text-to-speech
+├── ai_brain.py          # AI response generation
+├── document_handler.py  # File reading
+├── screen_reader.py     # Screen capture and OCR
+├── system_executor.py   # System commands
+├── requirements.txt     # Python dependencies
+└── README.md           # This file
+```
 
-## 💰 Costs
+## Customization
 
-| Service | Cost |
-|---------|------|
-| Netlify (Frontend) | **Free** |
-| VPS (Backend) | **$6-25/month** |
-| **Total** | **$6-25/month** |
+Edit `jarvis/config.py` to customize:
+- Wake word (default: "jarvis")
+- Voice settings
+- AI provider
+- Personality traits
 
-Much cheaper than OpenAI API for heavy usage!
+## License
 
----
-
-## 🔒 Privacy
-
-- ✅ **Your server** - You control everything
-- ✅ **No API keys** - No third-party billing
-- ✅ **Private data** - Stays on your infrastructure
-
----
-
-Built with ❤️ using React + Node.js + Ollama
+Personal use only. Have fun with your own JARVIS!

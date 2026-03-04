@@ -1,17 +1,17 @@
 """
-MHLABA Configuration
+JARVIS Configuration
 """
 import os
 from pathlib import Path
 
 
 class Config:
-    """Configuration settings for MHLABA"""
+    """Configuration settings for JARVIS"""
     
     def __init__(self):
         # Voice settings
         self.use_wake_word = True
-        self.wake_word = "mhlaba"
+        self.wake_word = "jarvis"
         self.voice_id = None  # None for default voice
         self.speech_rate = 175  # Words per minute
         
@@ -39,8 +39,8 @@ class Config:
         self.documents_dir = Path.home() / "Documents"
         
         # Personality
-        self.assistant_name = "MHLABA"
-        self.personality = "helpful, professional, witty, and efficient AI assistant"
+        self.assistant_name = "JARVIS"
+        self.personality = "helpful, professional, witty, and efficient like the AI from Iron Man"
         
     def get_ai_config(self):
         """Get AI-specific configuration"""
