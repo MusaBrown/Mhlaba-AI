@@ -1,214 +1,135 @@
 # 🤖 MHLABA - My Helpful Learning Assistant & Brilliant Aid
 
-Your personal AI assistant - available as both a desktop voice assistant and a **browser-based web interface with NO API keys needed!**
+Your personal AI assistant with **Ollama backend** and modern web interface.
 
-## 🌟 Features
+## 🏗️ Architecture
 
-### Desktop Application (Python)
-- 🎤 **Voice Recognition** - Hands-free voice commands
-- 🔊 **Text-to-Speech** - MHLABA speaks back to you
-- 🧠 **AI Brain** - Conversational AI with OpenAI/Anthropic support
-- 📄 **Document Reader** - Read and discuss various file formats
-- 🖥️ **Screen Reader** - Analyze screen content
-- ⚡ **System Commands** - Open apps, search web, get system info
+```
+┌─────────────────┐      HTTP API      ┌─────────────────┐
+│  mhlaba-web     │  ◄──────────────►  │  mhlaba-api     │
+│  (Frontend)     │                    │  (Backend)      │
+│  Netlify        │                    │  Render/VPS     │
+│  React          │                    │  Ollama         │
+└─────────────────┘                    └─────────────────┘
+```
 
-### Web Interface (React + WebLLM) 🆕
-- 💻 **Modern Chat Interface** - KimiCode-like dark theme
-- 🤖 **Browser-Based AI** - Runs locally using WebLLM
-- 🆓 **100% Free** - No API keys, no subscriptions!
-- 🔒 **Privacy First** - All processing on your device
-- 💾 **Persistent Conversations** - Saved in browser storage
-- 📱 **Responsive Design** - Works on all devices
+**No API keys needed!** You host your own Ollama backend.
 
 ## 📁 Project Structure
 
 ```
 .
 ├── mhlaba/              # Desktop Python application
-│   ├── main.py          # Main entry point
-│   ├── config.py        # Configuration
-│   ├── ai_brain.py      # AI logic
-│   ├── requirements.txt # Python dependencies
-│   └── README.md        # Desktop app docs
+│   ├── main.py
+│   ├── config.py
+│   └── requirements.txt
 │
-└── mhlaba-web/          # Web interface (React + WebLLM)
-    ├── src/             # React source code
-    ├── public/          # Static assets
-    ├── package.json     # Node dependencies
-    ├── netlify.toml     # Netlify config
-    └── README.md        # Web app docs
+├── mhlaba-api/          # Backend API (NEW!)
+│   ├── src/index.js     # Express API server
+│   ├── Dockerfile       # Docker config
+│   ├── docker-compose.yml
+│   └── README.md
+│
+├── mhlaba-web/          # Frontend React app
+│   ├── src/App.jsx      # Chat interface
+│   ├── src/config.js    # API URL config
+│   └── README.md
+│
+├── DEPLOY_OLLAMA.md     # Full deployment guide
+└── README.md            # This file
 ```
 
-## 🚀 Quick Start
+## 🚀 Quick Deploy
 
-### Web Interface (Recommended - No Setup!)
+### Step 1: Deploy Backend (Ollama API)
 
-**Live Demo**: https://mhlaba-ai.netlify.app
+**Option A: Docker VPS (Recommended)**
 
-Or run locally:
 ```bash
-cd mhlaba-web
-npm install
-npm run dev
+# On your VPS
+git clone https://github.com/MusaBrown/Mhlaba-AI.git
+cd Mhlaba-AI/mhlaba-api
+docker-compose up -d
+
+# Pull a model
+docker exec mhlaba-ollama ollama pull llama3.2
 ```
 
-**How it works:**
-1. Visit the site
-2. Click "Load AI Model" 
-3. Choose a model (Gemma 2 2B is fastest)
-4. Wait for download (1-5 GB, one-time)
-5. Start chatting!
+**Option B: Render.com**
+- See `DEPLOY_OLLAMA.md` for details
 
-### Desktop Application
+### Step 2: Update Frontend Config
 
-1. **Install Python 3.8+** from [python.org](https://python.org)
+Edit `mhlaba-web/src/config.js`:
 
-2. **Install dependencies**:
-```bash
-cd mhlaba
-pip install -r requirements.txt
+```javascript
+export const API_URL = 'https://your-api-url.com';
 ```
 
-3. **Run MHLABA**:
-```bash
-python main.py
-```
-
-4. **Optional: Add AI API keys** in `config.py` for cloud AI
-
-## 🌐 Deploy to Netlify (Web Interface)
-
-### One-Click Deploy
+### Step 3: Deploy Frontend
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/MusaBrown/Mhlaba-AI)
 
-### Manual Deploy
-
-1. **Build the web app**:
+Or manually:
 ```bash
 cd mhlaba-web
 npm install
 npm run build
+# Upload dist/ to Netlify
 ```
-
-2. **Go to** https://app.netlify.com/drop
-
-3. **Drag and drop** the `mhlaba-web/dist` folder
-
-## 🧠 Available AI Models (Web)
-
-Choose based on your device's capabilities:
-
-| Model | Size | RAM Needed | Speed | Quality |
-|-------|------|------------|-------|---------|
-| **Gemma 2 2B** ⭐ | 1.6 GB | 4GB | ⚡⚡⚡ | ⭐⭐⭐ |
-| **Phi-3 Mini** | 1.8 GB | 4GB | ⚡⚡⚡ | ⭐⭐⭐⭐ |
-| **Llama 3.1 8B** | 4.5 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐⭐ |
-| **Mistral 7B** | 4.5 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐⭐ |
-| **Qwen 2.5 7B** | 4.3 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐ |
-
-## ⚙️ Configuration
-
-### Desktop App
-
-Edit `mhlaba/config.py`:
-
-```python
-# Change wake word
-self.wake_word = "mhlaba"
-
-# Add AI API keys (optional - for cloud AI)
-self.openai_api_key = "your-key-here"
-self.anthropic_api_key = "your-key-here"
-```
-
-### Web App
-
-**No configuration needed!** Just:
-1. Visit the site
-2. Load a model
-3. Start chatting
-
-## 📝 Available Commands (Desktop)
-
-### Voice Commands
-Say "Mhlaba" followed by:
-- "What time is it?" - Get current time
-- "Open Chrome" - Open applications
-- "Read my document.txt" - Read files
-- "What's on my screen?" - Screen analysis
-- "Search for Python tutorials" - Web search
-
-### Text Commands
-Type directly in the terminal:
-- `hello` - Greeting
-- `what can you do` - List capabilities
-- `open notepad` - Open applications
-- `system info` - Computer stats
-- `exit` - Quit MHLABA
-
-## 🛠️ Troubleshooting
-
-### Web App
-
-**"WebGPU not supported" error:**
-- Use Chrome 113+ or Edge 113+
-- Enable WebGPU: `chrome://flags/#enable-unsafe-webgpu`
-
-**Model download fails:**
-- Check disk space (need 10GB free)
-- Ensure stable internet
-- Try a smaller model (Gemma 2 2B)
-
-**Slow responses:**
-- Use Gemma 2 2B or Phi-3 Mini
-- Close other browser tabs
-
-### Desktop App
-
-**Microphone not working:**
-- Check microphone is connected and set as default
-- Adjust `energy_threshold` in `config.py`
-
-**Voice not speaking:**
-- Check speakers/headphones are connected
-- Try running as administrator
-
-## 🔒 Privacy
-
-### Web App
-- ✅ **No data leaves your device**
-- ✅ **No API keys needed**
-- ✅ **No accounts or sign-ups**
-- ✅ **All processing is local**
-
-### Desktop App
-- ✅ Local voice processing
-- ✅ Optional cloud AI (only if you add API keys)
-
-## 🎨 Customization
-
-### Change the Name
-
-1. **Web**: Edit `mhlaba-web/src/App.jsx` and `index.html`
-2. **Desktop**: Edit `mhlaba/config.py`
-
-### Customize Theme
-
-Edit `mhlaba-web/src/App.css`:
-
-```css
-:root {
-  --bg-primary: #0d0d0d;
-  --accent-primary: #6366f1;
-  --accent-secondary: #a855f7;
-}
-```
-
-## 📄 License
-
-Personal use only. Have fun with your own MHLABA!
 
 ---
 
-Built with ❤️ using Python + React + WebLLM
+## 💻 Desktop Application
+
+Voice-activated AI assistant for Windows:
+
+```bash
+cd mhlaba
+pip install -r requirements.txt
+python main.py
+```
+
+---
+
+## 📚 Documentation
+
+- **[DEPLOY_OLLAMA.md](DEPLOY_OLLAMA.md)** - Complete deployment guide
+- **[mhlaba-api/README.md](mhlaba-api/README.md)** - Backend API docs
+- **[mhlaba-web/README.md](mhlaba-web/README.md)** - Frontend docs
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Frontend** | React + Vite |
+| **Backend** | Node.js + Express |
+| **AI Engine** | Ollama |
+| **Models** | Llama 3.2, Llama 3.1, Mistral, etc. |
+| **Hosting** | Netlify (frontend) + Render/VPS (backend) |
+
+---
+
+## 💰 Costs
+
+| Service | Cost |
+|---------|------|
+| Netlify (Frontend) | **Free** |
+| VPS (Backend) | **$6-25/month** |
+| **Total** | **$6-25/month** |
+
+Much cheaper than OpenAI API for heavy usage!
+
+---
+
+## 🔒 Privacy
+
+- ✅ **Your server** - You control everything
+- ✅ **No API keys** - No third-party billing
+- ✅ **Private data** - Stays on your infrastructure
+
+---
+
+Built with ❤️ using React + Node.js + Ollama
