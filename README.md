@@ -1,6 +1,6 @@
 # 🤖 MHLABA - My Helpful Learning Assistant & Brilliant Aid
 
-Your personal AI assistant - available as both a desktop voice assistant and a modern web interface.
+Your personal AI assistant - available as both a desktop voice assistant and a **browser-based web interface with NO API keys needed!**
 
 ## 🌟 Features
 
@@ -12,12 +12,13 @@ Your personal AI assistant - available as both a desktop voice assistant and a m
 - 🖥️ **Screen Reader** - Analyze screen content
 - ⚡ **System Commands** - Open apps, search web, get system info
 
-### Web Interface (React)
+### Web Interface (React + WebLLM) 🆕
 - 💻 **Modern Chat Interface** - KimiCode-like dark theme
-- 🤖 **Multiple AI Providers** - OpenAI GPT-3.5/4, Anthropic Claude
+- 🤖 **Browser-Based AI** - Runs locally using WebLLM
+- 🆓 **100% Free** - No API keys, no subscriptions!
+- 🔒 **Privacy First** - All processing on your device
 - 💾 **Persistent Conversations** - Saved in browser storage
 - 📱 **Responsive Design** - Works on all devices
-- 🔒 **Privacy First** - API keys stored locally only
 
 ## 📁 Project Structure
 
@@ -30,7 +31,7 @@ Your personal AI assistant - available as both a desktop voice assistant and a m
 │   ├── requirements.txt # Python dependencies
 │   └── README.md        # Desktop app docs
 │
-└── mhlaba-web/          # Web interface
+└── mhlaba-web/          # Web interface (React + WebLLM)
     ├── src/             # React source code
     ├── public/          # Static assets
     ├── package.json     # Node dependencies
@@ -39,6 +40,24 @@ Your personal AI assistant - available as both a desktop voice assistant and a m
 ```
 
 ## 🚀 Quick Start
+
+### Web Interface (Recommended - No Setup!)
+
+**Live Demo**: https://mhlaba-ai.netlify.app
+
+Or run locally:
+```bash
+cd mhlaba-web
+npm install
+npm run dev
+```
+
+**How it works:**
+1. Visit the site
+2. Click "Load AI Model" 
+3. Choose a model (Gemma 2 2B is fastest)
+4. Wait for download (1-5 GB, one-time)
+5. Start chatting!
 
 ### Desktop Application
 
@@ -55,36 +74,13 @@ pip install -r requirements.txt
 python main.py
 ```
 
-4. **Optional: Add AI API keys** in `config.py` for smarter responses
+4. **Optional: Add AI API keys** in `config.py` for cloud AI
 
-### Web Interface
+## 🌐 Deploy to Netlify (Web Interface)
 
-1. **Navigate to web directory**:
-```bash
-cd mhlaba-web
-```
+### One-Click Deploy
 
-2. **Install dependencies**:
-```bash
-npm install
-```
-
-3. **Start development server**:
-```bash
-npm run dev
-```
-
-4. **Open** http://localhost:3000
-
-## 🌐 Deploy to Netlify
-
-### One-Click Deploy (Recommended)
-
-Click this button to deploy directly to Netlify:
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/yourusername/mhlaba)
-
-*(Note: You'll need to upload this to a Git repository first)*
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/MusaBrown/Mhlaba-AI)
 
 ### Manual Deploy
 
@@ -99,23 +95,17 @@ npm run build
 
 3. **Drag and drop** the `mhlaba-web/dist` folder
 
-### Deploy via Git (CI/CD)
+## 🧠 Available AI Models (Web)
 
-1. **Push to GitHub**:
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/mhlaba.git
-git push -u origin main
-```
+Choose based on your device's capabilities:
 
-2. **Connect to Netlify**:
-   - Go to https://app.netlify.com
-   - Click "Add new site" → "Import an existing project"
-   - Select your GitHub repository
-   - Build settings are auto-configured via `netlify.toml`
-   - Click "Deploy site"
+| Model | Size | RAM Needed | Speed | Quality |
+|-------|------|------------|-------|---------|
+| **Gemma 2 2B** ⭐ | 1.6 GB | 4GB | ⚡⚡⚡ | ⭐⭐⭐ |
+| **Phi-3 Mini** | 1.8 GB | 4GB | ⚡⚡⚡ | ⭐⭐⭐⭐ |
+| **Llama 3.1 8B** | 4.5 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐⭐ |
+| **Mistral 7B** | 4.5 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐⭐ |
+| **Qwen 2.5 7B** | 4.3 GB | 8GB | ⚡⚡ | ⭐⭐⭐⭐ |
 
 ## ⚙️ Configuration
 
@@ -127,47 +117,17 @@ Edit `mhlaba/config.py`:
 # Change wake word
 self.wake_word = "mhlaba"
 
-# Add AI API keys
+# Add AI API keys (optional - for cloud AI)
 self.openai_api_key = "your-key-here"
 self.anthropic_api_key = "your-key-here"
 ```
 
 ### Web App
 
-1. **First time setup**: Click the Settings (⚙️) button
-2. **Select AI Provider**: OpenAI or Anthropic
-3. **Enter API Key**: Your key is stored only in your browser
-4. **Choose Model**: GPT-3.5, GPT-4, Claude, etc.
-
-**Get API Keys:**
-- **OpenAI**: https://platform.openai.com/api-keys
-- **Anthropic**: https://console.anthropic.com/settings/keys
-
-## 🎨 Customization
-
-### Change the Name
-
-To rename from "MHLABA" to something else:
-
-1. **Desktop**: Edit `mhlaba/config.py`
-   ```python
-   self.assistant_name = "YOUR_NAME"
-   self.wake_word = "your_wake_word"
-   ```
-
-2. **Web**: Edit `mhlaba-web/src/App.jsx` and `mhlaba-web/index.html`
-
-### Customize Theme
-
-Edit `mhlaba-web/src/App.css`:
-
-```css
-:root {
-  --bg-primary: #0d0d0d;      /* Background */
-  --accent-primary: #6366f1;   /* Primary color */
-  --accent-secondary: #a855f7; /* Secondary color */
-}
-```
+**No configuration needed!** Just:
+1. Visit the site
+2. Load a model
+3. Start chatting
 
 ## 📝 Available Commands (Desktop)
 
@@ -189,6 +149,21 @@ Type directly in the terminal:
 
 ## 🛠️ Troubleshooting
 
+### Web App
+
+**"WebGPU not supported" error:**
+- Use Chrome 113+ or Edge 113+
+- Enable WebGPU: `chrome://flags/#enable-unsafe-webgpu`
+
+**Model download fails:**
+- Check disk space (need 10GB free)
+- Ensure stable internet
+- Try a smaller model (Gemma 2 2B)
+
+**Slow responses:**
+- Use Gemma 2 2B or Phi-3 Mini
+- Close other browser tabs
+
 ### Desktop App
 
 **Microphone not working:**
@@ -199,20 +174,36 @@ Type directly in the terminal:
 - Check speakers/headphones are connected
 - Try running as administrator
 
-**Import errors:**
-```bash
-pip install -r requirements.txt
-```
+## 🔒 Privacy
 
 ### Web App
+- ✅ **No data leaves your device**
+- ✅ **No API keys needed**
+- ✅ **No accounts or sign-ups**
+- ✅ **All processing is local**
 
-**"Please set your API key" error:**
-- Click Settings and enter your API key
-- Ensure you're using the correct provider
+### Desktop App
+- ✅ Local voice processing
+- ✅ Optional cloud AI (only if you add API keys)
 
-**Build fails:**
-- Use Node.js 18+: `nvm use 18`
-- Delete `node_modules` and reinstall
+## 🎨 Customization
+
+### Change the Name
+
+1. **Web**: Edit `mhlaba-web/src/App.jsx` and `index.html`
+2. **Desktop**: Edit `mhlaba/config.py`
+
+### Customize Theme
+
+Edit `mhlaba-web/src/App.css`:
+
+```css
+:root {
+  --bg-primary: #0d0d0d;
+  --accent-primary: #6366f1;
+  --accent-secondary: #a855f7;
+}
+```
 
 ## 📄 License
 
@@ -220,4 +211,4 @@ Personal use only. Have fun with your own MHLABA!
 
 ---
 
-Built with ❤️ using Python + React
+Built with ❤️ using Python + React + WebLLM

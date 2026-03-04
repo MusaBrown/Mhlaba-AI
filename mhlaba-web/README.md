@@ -1,21 +1,44 @@
 # MHLABA Web Interface
 
-A modern, KimiCode-like web interface for MHLABA AI Assistant.
+A modern, KimiCode-like web interface for MHLABA AI Assistant - **runs entirely in your browser with NO API keys needed!**
 
-## Features
+## 🌟 Features
 
 - 🎨 **Modern Dark Theme** - Clean, professional interface inspired by KimiCode
 - 💬 **Real-time Chat** - Smooth messaging experience with markdown support
-- 🤖 **Multiple AI Providers** - Support for OpenAI (GPT-3.5, GPT-4) and Anthropic (Claude)
+- 🤖 **Browser-Based AI** - Uses WebLLM to run models directly in your browser
+- 🆓 **100% Free** - No API keys, no subscriptions, no server costs
+- 🔒 **Privacy First** - All processing happens locally on your device
 - 💾 **Local Storage** - Conversations saved locally in your browser
 - 📱 **Responsive Design** - Works on desktop and mobile devices
-- 🔒 **Privacy First** - API keys stored only in your browser's localStorage
 
-## Getting Started
+## 🚀 How It Works
+
+MHLABA uses [WebLLM](https://github.com/mlc-ai/web-llm) to download and run AI models directly in your browser using WebGPU:
+
+1. **First Visit**: Download an AI model (1-5 GB, one-time download)
+2. **Chat**: The model runs entirely on your device - no data sent to servers
+3. **Persist**: Model stays cached, conversations saved locally
+
+## 🛠️ System Requirements
+
+- **Browser**: Chrome 113+ or Edge 113+ (WebGPU required)
+- **RAM**: 8GB+ recommended (models are 1-5 GB)
+- **Storage**: 10GB free space for model caching
+
+### Enable WebGPU
+
+WebGPU is enabled by default in Chrome/Edge 113+. If not:
+
+1. Go to `chrome://flags/#enable-unsafe-webgpu`
+2. Set to "Enabled"
+3. Restart browser
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -45,85 +68,57 @@ npm run build
 
 The build output will be in the `dist` directory.
 
-## Configuration
+## 🌐 Deploy to Netlify
 
-### API Keys
+### One-Click Deploy (Recommended)
 
-The first time you use MHLABA, you'll need to configure your AI provider API key:
+Click this button to deploy directly to Netlify:
 
-1. Click the **Settings** button (gear icon)
-2. Select your preferred provider (OpenAI or Anthropic)
-3. Enter your API key
-4. Choose your preferred model
-5. Click **Save Settings**
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/MusaBrown/Mhlaba-AI)
 
-Your API key is stored only in your browser's localStorage and is never sent to any server other than the AI provider's API.
+### Manual Deploy
 
-### Getting API Keys
-
-**OpenAI:**
-- Visit https://platform.openai.com/api-keys
-- Create a new API key
-- Copy and paste it into the settings
-
-**Anthropic:**
-- Visit https://console.anthropic.com/settings/keys
-- Create a new API key
-- Copy and paste it into the settings
-
-## Deployment
-
-### Deploy to Netlify
-
-#### Option 1: Deploy via Netlify CLI
-
-1. Install Netlify CLI:
-```bash
-npm install -g netlify-cli
-```
-
-2. Login to Netlify:
-```bash
-netlify login
-```
-
-3. Deploy:
+1. **Build the web app**:
 ```bash
 cd mhlaba-web
-netlify deploy --prod --dir=dist
-```
-
-#### Option 2: Deploy via Git
-
-1. Push your code to GitHub/GitLab/Bitbucket
-
-2. Connect your repository to Netlify:
-   - Go to https://app.netlify.com
-   - Click "Add new site" → "Import an existing project"
-   - Choose your Git provider and repository
-   - Build settings will be auto-detected from `netlify.toml`
-   - Click "Deploy site"
-
-#### Option 3: Manual Deploy
-
-1. Build the project:
-```bash
-cd mhlaba-web
+npm install
 npm run build
 ```
 
-2. Go to https://app.netlify.com/drop
+2. **Go to** https://app.netlify.com/drop
 
-3. Drag and drop the `dist` folder
+3. **Drag and drop** the `mhlaba-web/dist` folder
 
-## Project Structure
+### Deploy via Git (Auto-Deploy)
+
+1. Push your code to GitHub (already done!)
+2. Connect to Netlify:
+   - Go to https://app.netlify.com
+   - Click "Add new site" → "Import an existing project"
+   - Choose `MusaBrown/Mhlaba-AI`
+   - Build settings will be auto-detected
+   - Click "Deploy site"
+
+## 🧠 Available Models
+
+Choose from several models depending on your needs:
+
+| Model | Size | Best For |
+|-------|------|----------|
+| **Gemma 2 2B** | 1.6 GB | Fastest, lowest resource usage |
+| **Phi-3 Mini** | 1.8 GB | Quick responses, efficient |
+| **Llama 3.1 8B** | 4.5 GB | Best overall quality |
+| **Qwen 2.5 7B** | 4.3 GB | Multilingual support |
+| **Mistral 7B** | 4.5 GB | High quality responses |
+
+## 📁 Project Structure
 
 ```
 mhlaba-web/
 ├── public/
 │   └── favicon.svg
 ├── src/
-│   ├── App.jsx       # Main application component
+│   ├── App.jsx       # Main application component (WebLLM integration)
 │   ├── App.css       # Styles with KimiCode-like theme
 │   └── main.jsx      # Entry point
 ├── index.html        # HTML template
@@ -133,7 +128,7 @@ mhlaba-web/
 └── README.md         # This file
 ```
 
-## Customization
+## 🎨 Customization
 
 ### Changing the Theme
 
@@ -149,39 +144,75 @@ Edit `src/App.css` to customize colors:
 }
 ```
 
-### Changing the Name
+### Adding Models
 
-To change "MHLABA" to something else:
+To add more models, edit the `AVAILABLE_MODELS` array in `src/App.jsx`:
 
-1. Edit `index.html` - Update the `<title>` tag
-2. Edit `src/App.jsx` - Update all instances of "MHLABA"
-3. Edit `public/favicon.svg` - Update the logo
+```javascript
+const AVAILABLE_MODELS = [
+  {
+    id: "Model-Name-q4f32_1-MLC",
+    name: "Display Name",
+    description: "Description",
+    size: "X GB",
+    quant: "q4f32"
+  },
+  // ...
+]
+```
 
-## Keyboard Shortcuts
+Find available models at: https://github.com/mlc-ai/web-llm/blob/main/src/config.ts
+
+## ⌨️ Keyboard Shortcuts
 
 - `Enter` - Send message
 - `Shift + Enter` - New line in message
-- `Esc` - Close settings modal
+- `Esc` - Close modals
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
-### "Please set your API key" error
-- Click the Settings button and enter your API key
-- Make sure you're using the correct key for your selected provider
+### "WebGPU not supported" error
+- Update Chrome/Edge to version 113+
+- Enable WebGPU flag: `chrome://flags/#enable-unsafe-webgpu`
+- Try a different browser
 
-### Messages not sending
-- Check that your API key is valid
-- Verify you have internet connection
-- Check browser console for error messages
+### Model download fails
+- Check you have enough disk space (10GB+)
+- Ensure stable internet connection
+- Try a smaller model first (Gemma 2 2B)
+
+### Slow responses
+- Use a smaller model (Gemma 2 2B or Phi-3 Mini)
+- Close other browser tabs
+- Ensure your device has enough free RAM
+
+### Out of memory errors
+- Use Gemma 2 2B (smallest model)
+- Close other applications
+- Consider upgrading RAM
 
 ### Build fails
-- Make sure you're using Node.js 18 or higher
-- Delete `node_modules` and run `npm install` again
+- Use Node.js 18+: `nvm use 18`
+- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
 
-## License
+## 🔒 Privacy & Security
+
+- **No data leaves your device** - Everything runs locally
+- **No API keys** - No accounts or authentication needed
+- **Conversations stored locally** - In browser's localStorage
+- **Models cached locally** - Downloaded once, reused across sessions
+
+## 📝 Notes
+
+- First load takes time (downloading the AI model)
+- Models are cached by the browser
+- Requires modern browser with WebGPU support
+- Performance depends on your device's capabilities
+
+## 📄 License
 
 Personal use only.
 
 ---
 
-Built with ❤️ using React + Vite
+Built with ❤️ using React + WebLLM + Vite
